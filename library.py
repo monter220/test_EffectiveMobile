@@ -8,6 +8,21 @@ from datetime import datetime
 
 
 FILE_NAME: str = 'library.json'
+TEXT_FOR_FILTRATION = (
+    '''
+Введите код для поиска:
+1 - по Автору
+2 - по Названию книги
+3 - по году
+'''
+)
+TEXT_FOR_UPDATING = (
+    '''
+Введите код статуса:
+1 - в наличии
+2 - Выдана
+'''
+)
 
 
 def string_in_line(line: str) -> str:
@@ -23,12 +38,12 @@ def add_book(FILE_NAME, author: str, title: str, year: int) -> list[str]:
     else:
         data_check = set(
             string_in_line(
-                book['author']+book['title']+str(
+                book['author'] + book['title'] + str(
                     book['year'])) for book in data['books'])
-        if string_in_line(author+title+str(year)) in data_check:
+        if string_in_line(author + title + str(year)) in data_check:
             return ['книга уже в списке']
         else:
-            num = data['books'][-1]['id']+1
+            num = data['books'][-1]['id'] + 1
     book = dict(
         id=num, author=author, title=title, year=year, status='в наличии')
     data['books'].append(book)
@@ -36,17 +51,23 @@ def add_book(FILE_NAME, author: str, title: str, year: int) -> list[str]:
     return ['Книга добавлена']
 
 
-def new_book_status(FILE_NAME, id: int, status: str):
+def new_book_status(FILE_NAME, id: int, status: int):
+    if status == 1:
+        status_type = 'В наличии'
+    else:
+        status_type = 'взято'
     with open(FILE_NAME, 'r+') as file:
         data = json.load(file)
         i: int = 0
         while i < len(data['books']) and i <= id:
             if data['books'][i]['id'] == id:
-                data['books'][i]['status'] = status
+                if data['books'][i]['status'] == status_type:
+                    return ['Нечего обновлять']
+                data['books'][i]['status'] = status_type
                 file.seek(0)
                 json.dump(data, file)
                 file.truncate()
-                return [f'Новый статус {status}']
+                return [f'Новый статус {status_type}']
             i += 1
         else:
             return ['Нет такой книги']
@@ -124,23 +145,26 @@ def main(FILE_NAME, args) -> list[str]:
                 print('Вы ввели не число')
     # Аргумент обновления статуса книги
     if args.update:
-        status = input('Введите новый статус: ')
         k = 0
         while k < 1:
-            id_update = input('Введите id для обновления: ')
-            if id_update.isdigit():
-                return new_book_status(FILE_NAME, int(id_update), status)
-            print('Это не число')
+            status = input(TEXT_FOR_UPDATING)
+            if status.isdigit():
+                if int(status) in [1, 2]:
+                    while k < 1:
+                        id_update = input('Введите id для обновления: ')
+                        if id_update.isdigit():
+                            return new_book_status(
+                                FILE_NAME, int(id_update), int(status))
+                        print('Это не число')
+                else:
+                    print('Нет такого кода')
+            else:
+                print('Вы ввели не число')
     # Аргумент для фильтрации книг
     if args.filter:
         k = 0
         while k < 1:
-            type_id = input('''
-                         Введите код для поиска:
-                         1 - по Автору
-                         2 - по Названию книги
-                         3 - по году
-                         ''')
+            type_id = input(TEXT_FOR_FILTRATION)
             if type_id.isdigit():
                 if int(type_id) in [1, 2, 3]:
                     filter = input('Ключ фильтра: ')

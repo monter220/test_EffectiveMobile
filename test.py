@@ -27,10 +27,10 @@ class TestLibrary(unittest.TestCase):
     def test_new_book_status(self):
         add_book(self.FILE_NAME, 'Автор', 'Название', 2020)
 
-        result = new_book_status(self.FILE_NAME, 1, 'взято')
+        result = new_book_status(self.FILE_NAME, 1, 2)
         self.assertEqual(result, ['Новый статус взято'])
 
-        result = new_book_status(self.FILE_NAME, 999, 'взято')
+        result = new_book_status(self.FILE_NAME, 999, 2)
         self.assertEqual(result, ['Нет такой книги'])
 
     def test_search_book(self):
@@ -48,7 +48,8 @@ class TestLibrary(unittest.TestCase):
 
         result = del_book(self.FILE_NAME, 1)
         self.assertEqual(result, [
-            "{'id': 1, 'author': 'Автор', 'title': 'Название', 'year': 2020, 'status': 'в наличии'} удалена"])
+            "{'id': 1, 'author': 'Автор', 'title': "
+            "'Название', 'year': 2020, 'status': 'в наличии'} удалена"])
 
         result = del_book(self.FILE_NAME, 999)
         self.assertEqual(result, ['Такая книга не найдена'])
